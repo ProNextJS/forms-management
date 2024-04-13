@@ -92,7 +92,12 @@ export const RegistrationForm = ({
       <form
         ref={formRef}
         action={formAction}
-        onSubmit={form.handleSubmit(() => formRef?.current?.submit())}
+        onSubmit={(evt) => {
+          evt.preventDefault();
+          form.handleSubmit(() => {
+            formAction(new FormData(formRef.current!));
+          })(evt);
+        }}
         className="space-y-8"
       >
         <div className="flex gap-2">
