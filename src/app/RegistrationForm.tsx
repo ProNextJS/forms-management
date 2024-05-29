@@ -135,7 +135,7 @@ export const RegistrationForm = ({
           name="zipcode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Zip Code</FormLabel>
               <FormControl>
                 <Input placeholder="" {...field} />
               </FormControl>
