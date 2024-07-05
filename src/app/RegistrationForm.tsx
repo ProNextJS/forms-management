@@ -1,8 +1,6 @@
 "use client";
 import { useFormState } from "react-dom";
-import { useRef } from "react";
-
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -16,33 +14,38 @@ import {
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { number, z } from "zod";
 
 import { schema } from "./registrationSchema";
+import SubmitButton from "./sumbit-button";
+import { Button } from "@/components/ui/button";
 
 export const RegistrationForm = ({
-  onDataAction,
   onFormAction,
 }: {
-  onDataAction: (data: z.infer<typeof schema>) => Promise<{
-    message: string;
-    user?: z.infer<typeof schema>;
-    issues?: string[];
-  }>;
   onFormAction: (
+    additional: {
+      userId: number;
+    },
     prevState: {
       message: string;
+      success: boolean;
       user?: z.infer<typeof schema>;
       issues?: string[];
     },
     data: FormData
   ) => Promise<{
     message: string;
+    success: boolean;
     user?: z.infer<typeof schema>;
     issues?: string[];
   }>;
 }) => {
-  const [state, formAction] = useFormState(onFormAction, {
+  const withId = onFormAction.bind(null, {
+    userId: 1
+  })
+  const [state, formAction] = useFormState(withId, {
+    success: false,
     message: "",
   });
   const form = useForm<z.infer<typeof schema>>({
@@ -53,51 +56,19 @@ export const RegistrationForm = ({
       email: "",
       zipcode: "",
     },
+    mode: 'all'
   });
 
-  const onSubmit = async (data: z.infer<typeof schema>) => {
-    console.log(data);
-    fetch("/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => console.log(data));
-    // const formData = new FormData();
-    // formData.append("first", data.first);
-    // formData.append("last", data.last);
-    // formData.append("email", data.email);
-    // fetch("/api/registerForm", {
-    //   method: "POST",
-    //   body: formData,
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => console.log(data));
-    // console.log(await onDataAction(data));
-    // const formData = new FormData();
-    // formData.append("first", data.first);
-    // formData.append("last", data.last);
-    // formData.append("email", data.email);
-    // console.log(await onDataAction(data));
-  };
-
   const formRef = useRef<HTMLFormElement>(null);
-
-  return (
+  return (<>
+    <Button onClick={() => {
+      formRef.current?.requestSubmit()
+    }}>test Programmatic form submission </Button>
     <Form {...form}>
       <div>{state?.message}</div>
       <form
         ref={formRef}
         action={formAction}
-        onSubmit={(evt) => {
-          evt.preventDefault();
-          form.handleSubmit(() => {
-            formAction(new FormData(formRef.current!));
-          })(evt);
-        }}
         className="space-y-8"
       >
         <div className="flex gap-2">
@@ -158,8 +129,8 @@ export const RegistrationForm = ({
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <SubmitButton text="Submit"></SubmitButton>
       </form>
-    </Form>
+    </Form></>
   );
 };
